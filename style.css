@@ -1,0 +1,97 @@
+@font-face {
+
+    font-family: 'BebasNeueRegular';
+    src: url('/squelettes/fonts/BebasNeue-webfont.eot');
+    src: url('/squelettes/fonts/BebasNeue-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/squelettes/fonts/BebasNeue-webfont.woff') format('woff'),
+         url('/squelettes/fonts/BebasNeue-webfont.ttf') format('truetype'),
+         url('/squelettes/fonts/BebasNeue-webfont.svg#BebasNeueRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+	font-family:helvetica, sans-serif;
+	font-size: 14px;
+	margin: 0; padding: 0;
+}
+
+#cp, #sources {
+	max-width:800px;
+	margin:0 auto;
+	padding:10px 20px;
+}
+
+#carte #svgCarte {
+	background: #efefef none;
+	overflow: hidden;
+}
+
+h2 {
+	text-align:left;
+	margin:20px auto 0;
+	color:#000;
+	position: relative;
+	font-family:"BebasNeueRegular";
+	font-size:2em;
+}
+
+.graticule {
+	fill: none;
+	stroke: #fff;
+	stroke-width: 0.02em;
+}
+
+.boundary {
+	fill: none;
+	stroke: #888;
+	stroke-width: 0.03em;
+}
+
+.picto {
+	cursor: pointer;
+}
+
+#carte {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+}
+
+.article {
+	position: absolute;
+	top: 10%; left: 10%;
+	width: 70%;
+	height: 60%;
+	padding: 5%;
+	background-color: rgba(255,255,255,0.8);
+	color: #000;
+	display: none;
+}
+
+.articleTexte {
+	position: relative;
+	width: 40%; height: 90%;
+	line-height: 1.6em;
+	overflow-y: scroll;
+}
+
+
+
+@media (max-width: 670px)
+{
+	.articleTexte {
+		width: 100%;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
