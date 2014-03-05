@@ -38,7 +38,7 @@ h2 {
 
 .graticule {
 	fill: none;
-	stroke: #fff;
+	stroke: #000;
 	stroke-width: 0.1em;
 }
 
@@ -76,6 +76,11 @@ h2 {
 	overflow-y: scroll;
 }
 
+
+.arc path {
+	stroke: #fff;
+	stroke-width: 2px;
+}
 
 
 @media (max-width: 670px)

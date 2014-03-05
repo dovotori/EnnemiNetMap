@@ -19,30 +19,21 @@ function setup()
 	
 	var graticule = d3.geo.graticule();
 	
-	var svg = d3.select("#svgCarte");
+	var svg = d3.select("#svg");
 	
-	svg.append("defs").append("path")
-		.datum({type: "Sphere"})
-		.attr("id", "sphere")
-		.attr("d", path);
+	// svg.append("defs").append("path")
+	// 	.datum({type: "Sphere"})
+	// 	.attr("id", "sphere")
+	// 	.attr("d", path);
 	
-	
-	var dessinGraticule = svg.append("path")
-		.datum(graticule)
-		.attr("class", "graticule")
-		.attr("d", path);
+	// var dessinGraticule = svg.append("path")
+	// 	.datum(graticule)
+	// 	.attr("class", "graticule")
+	// 	.attr("d", path);
 	
 	var carte = svg.append("svg:g").attr("id", "carte");
-
-	var infosPictos;
-
-	var pictos = [];
-	var nbPictos = 26;
-	for(var i = 0; i < nbPictos; i++)
-	{
-		pictos[i] = svg.append("svg:g");
-	}
-	var focusArticle;
+	var cercle = svg.append("svg:g").attr("id", "cercle");;
+	var arc;
 
 
 
@@ -66,7 +57,7 @@ function setup()
 	{
 
 		dessinerCarte(results[0]);
-		initPictos(results[1]);
+		initData(results[1]);
 		resize();
 
 	}
@@ -90,101 +81,84 @@ function setup()
 
 
 
-	function initPictos(collection)
+	function initData(collection)
 	{
 		infosPictos = collection;
 
-		var forme = "M24.869 -17.798 L17.798 -24.869 L0 -7.071 L-17.797 -24.869 L-24.869 -17.798 L-7.071 0 L-24.869 17.798 L-17.798 24.869 L0 7.071 L17.798 24.869 L24.869 17.798 L7.071 0Z";
 
-		for(var i = 0; i < nbPictos; i++)
-		{
-			console.log(infosPictos[i].exactions);
-			if(infosPictos[i].exactions == "Surveillance")
+		// LISTER INSTITUTIONS
+		var institutions = [];  // [ nomInstitutions, [isoPays] ] 
+		var cpt = 0;
+
+		collection.forEach(function(d){
+			
+			var elem = d.institutionsFR.split(',');
+			for(var i = 0; i < elem.length; i++)
 			{
-				console.log("FIND");
+				var found = false;
+				for(var j = 0; j < institutions.length; j++)
+				{
+					if(elem[i] == institutions[j][0])
+					{
+						found = true;
+					}
+				}
+				if(!found){
+					institutions[cpt] = [ elem[i], "test" ];
+					cpt++;
+				}
 			}
 
-			pictos[i].append("svg:path")
-				.attr("d", forme)
-				.attr("id", infosPictos[i].iso)
-				.attr("class", "picto")
-				.style("stroke", "#000000")
-				.style("stroke-width", "2")
-				.style("fill", "#ffffff");
+		});
 
-		}
 
+
+
+
+
+		arc = d3.svg.arc();
+
+		var pie = d3.layout.pie()
+		    .sort(null)
+		    .value(function(d) { return institutions.length; });
+
+		var elem = cercle.selectAll(".arc")
+	      	.data(pie(institutions))
+	    	.enter().append("g")
+	      	.attr("class", "arc");
+
+		elem.append("text")
+			.attr("class", "texte")
+			.text(function(d) { return d.data[0].replace(/"/g,''); });
+	      
 
 	}
 
 
 
 
-	
-	
-	function clicPicto(event)
-	{ 	
-
-		var target = event.target.id;
-		//console.log(target);
-		d3.selectAll(".picto").style("fill", "#fff");
-		d3.select("#"+event.target.id).style("fill", "red");
-
-
-		focusArticle = "art"+target;
-		
-		$("#art"+target).fadeTo( "slow", 1, function(){ $(this).css("display", "block"); } );
-
-	}	
-	
-
-
-	
-	d3.select(window).on('resize', resize);	
-
-	function resize() 
+	function redrawTextes()
 	{
-	
-	    width = window.innerWidth; 
-		height = window.innerHeight;
 
-	    // update projection
-	    projection
-	        .translate([width / 2, height / 2])
-	        .scale(width / 20);
-	
-		svg
-			.attr("width", width)
-			.attr("height", height);
-		
-	    carte
-	        .style('width', width)
-	        .style('height', height);
-	        	
-	    carte.selectAll("path").attr('d', path);
-	    dessinGraticule.attr('d', path);
+		d3.selectAll(".texte").each(function(d){
 
-	    afficherPictos();
-
+			d3.select(this).attr("transform", function(d) { 
+		      	var angle = d.startAngle + (d.endAngle - d.startAngle);
+		      	//console.log(d.data.institutionsFR+" "+angle);
+		      	if(angle < Math.PI)
+		      	{
+		      		d3.select(this).style("text-anchor", "start");
+		      		return "translate(" + arc.centroid(d) + ")rotate("+map(angle, 0, Math.PI, -90, 90)+")"; 
+		      	} else {
+		      		d3.select(this).style("text-anchor", "end");
+		      		return "translate(" + arc.centroid(d) + ")rotate("+map(angle, Math.PI, Math.PI*2, -90, 90)+")"; 
+		      	}
+	    	});
+		});
 	}
 
-
-
-	function afficherPictos()
-	{
-		
-		for(var i = 0; i < nbPictos; i++)
-		{
-
-			var position = getGeoCoord(infosPictos[i].latitudeCapitale, infosPictos[i].longitudeCapitale);
-
-			pictos[i]
-				.attr("transform", "translate("+position[0]+", "+position[1]+") scale(0.4)");
-		
-		}
-
-	}
-
+	
+	
 
 
 
@@ -225,33 +199,44 @@ function setup()
 
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// EVENT
 
-	//document.body.addEventListener("click", function(event){ onClick(event); }, false);
 
-	function onClick(event)
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// RESIZE
+
+
+	d3.select(window).on('resize', resize);	
+
+	function resize() 
 	{
-		if(event.target.className.baseVal == "picto")
-		{
-			clicPicto(event);
-		} else {
-			reset();
-		}
+	
+	    width = window.innerWidth; 
+		height = window.innerHeight;
+
+	    // update projection
+	    projection
+	        .translate([width / 2, height / 2])
+	        .scale(width / 20);
+	
+		svg
+			.attr("width", width)
+			.attr("height", height);
+
+	    carte.selectAll("path").attr('d', path);
+
+	    var rayonCercle = Math.min(width, height) / 2;
+	    arc.outerRadius(rayonCercle - 10).innerRadius(rayonCercle - 70);
+	    cercle.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+	    redrawTextes();
+
+
+
 	}
-
-
-
-	function reset()
-	{
-
-		d3.selectAll(".picto").style("fill", "#fff");
-		$("#"+focusArticle).fadeTo( "slow", 0, function(){ $(this).css("display", "none"); } );
-
-	}
-
 
 
 
