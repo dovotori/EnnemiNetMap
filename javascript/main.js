@@ -37,7 +37,7 @@ function setup()
 	var infosPictos;
 
 	var pictos = [];
-	var nbPictos = 22;
+	var nbPictos = 26;
 	for(var i = 0; i < nbPictos; i++)
 	{
 		pictos[i] = svg.append("svg:g");
@@ -56,7 +56,7 @@ function setup()
 
 	queue()
 		.defer(lireJson, "data/world-countries.json")
-		.defer(lireCsv, "data/liste.csv")
+		.defer(lireCsv, "data/data.csv")
 		.awaitAll(ready);
 	
 
@@ -82,6 +82,7 @@ function setup()
 			.data(collection.features)
 			.enter().append("svg:path")
 			.attr("d", path)
+			.attr("class", "land")
 			.attr("id", function(d){ return d.id; });
 		
 	}
@@ -97,15 +98,19 @@ function setup()
 
 		for(var i = 0; i < nbPictos; i++)
 		{
+			console.log(infosPictos[i].exactions);
+			if(infosPictos[i].exactions == "Surveillance")
+			{
+				console.log("FIND");
+			}
+
 			pictos[i].append("svg:path")
 				.attr("d", forme)
-				.attr("id", infosPictos[i].name)
+				.attr("id", infosPictos[i].iso)
 				.attr("class", "picto")
 				.style("stroke", "#000000")
 				.style("stroke-width", "2")
 				.style("fill", "#ffffff");
-
-			
 
 		}
 
@@ -137,9 +142,6 @@ function setup()
 	
 	d3.select(window).on('resize', resize);	
 
-
-
-
 	function resize() 
 	{
 	
@@ -149,7 +151,7 @@ function setup()
 	    // update projection
 	    projection
 	        .translate([width / 2, height / 2])
-	        .scale(width / 7);
+	        .scale(width / 20);
 	
 		svg
 			.attr("width", width)
@@ -160,6 +162,7 @@ function setup()
 	        .style('height', height);
 	        	
 	    carte.selectAll("path").attr('d', path);
+	    dessinGraticule.attr('d', path);
 
 	    afficherPictos();
 
@@ -173,8 +176,8 @@ function setup()
 		for(var i = 0; i < nbPictos; i++)
 		{
 
-			//var position = projection([ Math.round(getRandom(0, 20)), Math.round(getRandom(0, 20)) ]);
-			var position = projection([ infosPictos[i].long , infosPictos[i].lat ]);
+			var position = getGeoCoord(infosPictos[i].latitudeCapitale, infosPictos[i].longitudeCapitale);
+
 			pictos[i]
 				.attr("transform", "translate("+position[0]+", "+position[1]+") scale(0.4)");
 		
@@ -184,9 +187,50 @@ function setup()
 
 
 
-	document.body.addEventListener("click", function(event){ onClick(event); }, false);
 
 
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// UTILES
+
+	function getGeoCoord(latitude, longitude)
+	{
+
+	    var traductionCoor = [ 0, 0 ];
+
+	    if(latitude != "#N/A" && longitude != "#N/A")
+	    {
+
+	        var lat = parseFloat(latitude.substring(0, latitude.length-1));
+	        var sens = latitude.substring(latitude.length-1, latitude.length);
+	        if(sens == "S"){ lat *= -1; }
+
+	        var long = parseFloat(longitude.substring(0, longitude.length-1));
+	        sens = longitude.substring(longitude.length-1, longitude.length);
+	        if(sens == "W"){ long *= -1; }
+
+	        coordonneesCapitale = [ long, lat ];
+	        var traductionCoor = projection(coordonneesCapitale);        
+
+	    }
+
+	    return traductionCoor;
+
+	}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// EVENT
+
+	//document.body.addEventListener("click", function(event){ onClick(event); }, false);
 
 	function onClick(event)
 	{
@@ -207,6 +251,9 @@ function setup()
 		$("#"+focusArticle).fadeTo( "slow", 0, function(){ $(this).css("display", "none"); } );
 
 	}
+
+
+
 
 
 
