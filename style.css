@@ -43,8 +43,8 @@ h2 {
 }
 
 .land {
-	fill: #000;
-	stroke: #888;
+	fill: #888;
+	stroke: #fff;
 	stroke-width: 0.02em;
 }
 
@@ -77,9 +77,9 @@ h2 {
 }
 
 
-.arc path {
-	stroke: #fff;
-	stroke-width: 2px;
+.ligne {
+	stroke: #f00;
+	stroke-width: 0.02em;
 }
 
 

@@ -32,8 +32,11 @@ function setup()
 	// 	.attr("d", path);
 	
 	var carte = svg.append("svg:g").attr("id", "carte");
-	var cercle = svg.append("svg:g").attr("id", "cercle");;
+	var cercle = svg.append("svg:g").attr("id", "cercle");
+	var ligne = svg.append("svg:g").attr("id", "ligne");
+	
 	var arc;
+	var institutions;
 
 
 
@@ -74,7 +77,7 @@ function setup()
 			.enter().append("svg:path")
 			.attr("d", path)
 			.attr("class", "land")
-			.attr("id", function(d){ return d.id; });
+			.attr("id", function(d){ return "land"+d.id; });
 		
 	}
 
@@ -87,32 +90,50 @@ function setup()
 
 
 		// LISTER INSTITUTIONS
-		var institutions = [];  // [ nomInstitutions, [isoPays] ] 
+		institutions = [];
+
 		var cpt = 0;
 
 		collection.forEach(function(d){
-			
+
+			var isoPays = d.iso;
+
+			// AFFECTER INSTITUTIONS			
 			var elem = d.institutionsFR.split(',');
+
 			for(var i = 0; i < elem.length; i++)
 			{
+
 				var found = false;
+
+				// boucle dans les institutions
 				for(var j = 0; j < institutions.length; j++)
 				{
+
+					// QUAND ON TROUVE UN DOUBLON
 					if(elem[i] == institutions[j][0])
-					{
+					{	
 						found = true;
+						// AJOUT DES PAYS CONCERNEES PAR L'INSTITUTION
+						institutions[j][1].push(isoPays);
 					}
 				}
+
+
+				// NEW INSTITUTION
 				if(!found){
-					institutions[cpt] = [ elem[i], "test" ];
+					institutions[cpt] = [ elem[i], [] ];
+					institutions[cpt][1].push(isoPays);
 					cpt++;
 				}
 			}
+
 
 		});
 
 
 
+		//console.log(institutions);
 
 
 
@@ -125,26 +146,43 @@ function setup()
 		var elem = cercle.selectAll(".arc")
 	      	.data(pie(institutions))
 	    	.enter().append("g")
-	      	.attr("class", "arc");
+	      	.attr("class", "arc")
+	      	.attr("id", function(d){ return d.data[0]; });
 
 		elem.append("text")
 			.attr("class", "texte")
 			.text(function(d) { return d.data[0].replace(/"/g,''); });
 	      
 
+
+		for(var i = 0; i < institutions.length; i++)
+		{
+			for(var j = 0; j < institutions[i][1].length; j++)
+			{
+				ligne.append("line")
+					.attr("class", "ligne")
+					.attr("id", institutions[i][1][j])
+					.attr("data-institution", institutions[i][0]);
+			}
+		}
+
+
+
 	}
 
 
 
 
-	function redrawTextes()
+	function redraw()
 	{
 
+
+		// TEXTES
 		d3.selectAll(".texte").each(function(d){
 
 			d3.select(this).attr("transform", function(d) { 
 		      	var angle = d.startAngle + (d.endAngle - d.startAngle);
-		      	//console.log(d.data.institutionsFR+" "+angle);
+
 		      	if(angle < Math.PI)
 		      	{
 		      		d3.select(this).style("text-anchor", "start");
@@ -155,6 +193,41 @@ function setup()
 		      	}
 	    	});
 		});
+
+
+		// LIGNES
+		/*for(var i = 0; i < institutions.length; i++)
+		{
+			for(var j = 0; j < institutions[i][1].length; j++)
+			{
+				var ligne = d3.select("#"+institutions[i][1][j]);
+				ligne
+					.attr("x1", 0)
+					.attr("y1", 0)
+					.attr("x2", 500)
+					.attr("y2", 500);
+			}
+		}*/
+
+		
+		d3.selectAll(".ligne").each(function(d){
+
+			var ligne = d3.select(this);
+
+			console.log(ligne.attr("id"));
+			var boxPays = document.getElementById("land"+ligne.attr("id")).getBBox();
+			var posPays = [ boxPays.x + (boxPays.width / 2), boxPays.y + (boxPays.height / 2) ];
+
+			ligne
+				.attr("x1", 0)
+				.attr("y1", 0)
+				.attr("x2", posPays[0])
+				.attr("y2", posPays[1]);
+
+			
+		});
+
+
 	}
 
 	
@@ -229,18 +302,17 @@ function setup()
 
 	    carte.selectAll("path").attr('d', path);
 
-	    var rayonCercle = Math.min(width, height) / 2;
+	    var rayonCercle = Math.min(width, height) / 3;
+
 	    arc.outerRadius(rayonCercle - 10).innerRadius(rayonCercle - 70);
 	    cercle.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-	    redrawTextes();
+	    
+
+	    redraw();
 
 
 
 	}
-
-
-
-
 
 
 }
