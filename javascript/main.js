@@ -90,7 +90,7 @@ function setup()
 
 
 		// LISTER INSTITUTIONS
-		institutions = [];
+		institutions = [];	// [ nom, [pays concernes], id ]
 
 		var cpt = 0;
 
@@ -122,7 +122,10 @@ function setup()
 
 				// NEW INSTITUTION
 				if(!found){
-					institutions[cpt] = [ elem[i], [] ];
+					var id = elem[i].replace(/[-éè"() ]/g,'');
+					id = id.replace(/\'/g, '');
+					
+					institutions[cpt] = [ elem[i], [], id ];
 					institutions[cpt][1].push(isoPays);
 					cpt++;
 				}
@@ -131,9 +134,7 @@ function setup()
 
 		});
 
-
-
-		//console.log(institutions);
+//console.log(institutions);
 
 
 
@@ -146,12 +147,13 @@ function setup()
 		var elem = cercle.selectAll(".arc")
 	      	.data(pie(institutions))
 	    	.enter().append("g")
-	      	.attr("class", "arc")
-	      	.attr("id", function(d){ return d.data[0]; });
+	      	.attr("class", "arc");
+	      	
 
 		elem.append("text")
 			.attr("class", "texte")
-			.text(function(d) { return d.data[0].replace(/"/g,''); });
+			.text(function(d) { return d.data[0].replace(/"/g,''); })
+			.attr("id", function(d){ return d.data[2]; });
 	      
 
 
@@ -162,7 +164,7 @@ function setup()
 				ligne.append("line")
 					.attr("class", "ligne")
 					.attr("id", institutions[i][1][j])
-					.attr("data-institution", institutions[i][0]);
+					.attr("data-institution", institutions[i][2]);
 			}
 		}
 
@@ -181,51 +183,49 @@ function setup()
 		d3.selectAll(".texte").each(function(d){
 
 			d3.select(this).attr("transform", function(d) { 
+
+				var id = d.data[2];
+				var transform = "";
+				var centre = arc.centroid(d);
 		      	var angle = d.startAngle + (d.endAngle - d.startAngle);
 
 		      	if(angle < Math.PI)
 		      	{
 		      		d3.select(this).style("text-anchor", "start");
-		      		return "translate(" + arc.centroid(d) + ")rotate("+map(angle, 0, Math.PI, -90, 90)+")"; 
+		      		transform = "translate(" + centre + ")rotate("+map(angle, 0, Math.PI, -90, 90)+")"; 
 		      	} else {
 		      		d3.select(this).style("text-anchor", "end");
-		      		return "translate(" + arc.centroid(d) + ")rotate("+map(angle, Math.PI, Math.PI*2, -90, 90)+")"; 
+		      		transform = "translate(" + centre + ")rotate("+map(angle, Math.PI, Math.PI*2, -90, 90)+")"; 
 		      	}
+
+		      	// LIGNES
+		      	d3.selectAll(".ligne").each(function(d){
+
+		      		var ligne = d3.select(this);
+
+		      		if(ligne.attr("data-institution") == id)
+		      		{
+
+						var boxPays = document.getElementById("land"+ligne.attr("id")).getBBox();
+						var posPays = [ boxPays.x + (boxPays.width / 2), boxPays.y + (boxPays.height / 2) ];
+
+						var posTexte = [ centre[0]+(width/2), centre[1]+(height/2) ];
+
+						ligne
+							.attr("x1", posTexte[0])
+							.attr("y1", posTexte[1])
+							.attr("x2", posPays[0])
+							.attr("y2", posPays[1]);
+					}
+				});
+
+
+		      	return transform;
 	    	});
 		});
 
 
-		// LIGNES
-		/*for(var i = 0; i < institutions.length; i++)
-		{
-			for(var j = 0; j < institutions[i][1].length; j++)
-			{
-				var ligne = d3.select("#"+institutions[i][1][j]);
-				ligne
-					.attr("x1", 0)
-					.attr("y1", 0)
-					.attr("x2", 500)
-					.attr("y2", 500);
-			}
-		}*/
 
-		
-		d3.selectAll(".ligne").each(function(d){
-
-			var ligne = d3.select(this);
-
-			console.log(ligne.attr("id"));
-			var boxPays = document.getElementById("land"+ligne.attr("id")).getBBox();
-			var posPays = [ boxPays.x + (boxPays.width / 2), boxPays.y + (boxPays.height / 2) ];
-
-			ligne
-				.attr("x1", 0)
-				.attr("y1", 0)
-				.attr("x2", posPays[0])
-				.attr("y2", posPays[1]);
-
-			
-		});
 
 
 	}
@@ -293,7 +293,7 @@ function setup()
 
 	    // update projection
 	    projection
-	        .translate([width / 2, height / 2])
+	        .translate([width / 2, (height / 2) + (height / 20)])
 	        .scale(width / 20);
 	
 		svg

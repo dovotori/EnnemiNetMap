@@ -4,16 +4,44 @@
 		"selected_items":
 		[
 			[
+				"in",
+				"institutions"
+			],
+			[
+				"iso",
+				"isoPays"
+			],
+			[
+				"arc",
+				"arc"
+			],
+			[
+				"class",
+				"className"
+			],
+			[
+				"dessin",
+				"dessinGraticule"
+			],
+			[
+				"select",
+				"select"
+			],
+			[
+				"dess",
+				"dessinGraticule"
+			],
+			[
+				"get",
+				"getGeoCoord"
+			],
+			[
 				"ba",
 				"background-color"
 			],
 			[
 				"liste",
 				"liste_legende"
-			],
-			[
-				"in",
-				"inline-table"
 			],
 			[
 				"dis",
@@ -28,10 +56,6 @@
 				"currentYear"
 			],
 			[
-				"select",
-				"selectAll"
-			],
-			[
 				"d",
 				"d"
 			],
@@ -42,10 +66,6 @@
 			[
 				"cur",
 				"currentYear"
-			],
-			[
-				"get",
-				"getScoreCurrentYear"
 			],
 			[
 				"ex",
@@ -74,10 +94,6 @@
 			[
 				"focus",
 				"focusPosition"
-			],
-			[
-				"iso",
-				"iso"
 			],
 			[
 				"alre",
@@ -404,10 +420,6 @@
 				"addEventListener"
 			],
 			[
-				"class",
-				"classement"
-			],
-			[
 				"j",
 				"j"
 			],
@@ -488,10 +500,6 @@
 				"threejs"
 			],
 			[
-				"dess",
-				"dessinerNotesPays"
-			],
-			[
 				"material",
 				"material2"
 			],
@@ -506,24 +514,16 @@
 			[
 				"form",
 				"formePicto"
-			],
-			[
-				"texte",
-				"texteLegende"
-			],
-			[
-				"hover",
-				"hoverLegende"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "index.html",
+			"file": "javascript/main.js",
 			"settings":
 			{
-				"buffer_size": 4086,
+				"buffer_size": 6515,
 				"line_ending": "Unix"
 			}
 		}
@@ -600,10 +600,19 @@
 	},
 	"file_history":
 	[
+		"/Users/web-asst/github/Religions-map-2013/javascript/main.js",
+		"/Users/web-asst/github/EnnemiNetMap/data/world-countries.json",
+		"/Users/web-asst/github/EnnemiNetMap/index.html",
+		"/Users/web-asst/github/EnnemiNetMap/data/data.csv",
+		"/Users/web-asst/github/EnnemiNetMap/style.css",
+		"/Users/web-asst/Sites/HeightmapTexture/data/world-countries-clean.json",
+		"/Users/web-asst/github/EnnemiNetMap/texteCercle.js",
+		"/Users/web-asst/Sites/HeightmapTexture/js/main.js",
+		"/Users/web-asst/github/EnnemiNetMap/javascript/elementsNetMap.svg",
+		"/Users/web-asst/github/EnnemiNetMap/elementsNetMap.svg",
 		"/Users/web-asst/Sites/HeightmapTexture/data/index.csv",
 		"/Users/web-asst/Sites/HeightmapTexture_old/knacss/knacss.css",
 		"/Users/web-asst/Sites/HeightmapTexture/js/action.js",
-		"/Users/web-asst/Sites/HeightmapTexture/js/main.js",
 		"/Users/web-asst/Sites/HeightmapTexture/fr-footer.php",
 		"/Users/web-asst/Sites/HeightmapTexture/knacss/knacss.css",
 		"/Users/web-asst/Sites/HeightmapTexture/fr-header.php",
@@ -630,7 +639,6 @@
 		"/Users/web-asst/github/HeighmapTexture/es-header.php",
 		"/Users/web-asst/github/HeighmapTexture/ru-header.php",
 		"/Users/web-asst/github/HeighmapTexture/en-header.php",
-		"/Users/web-asst/github/Religions-map-2013/javascript/main.js",
 		"/Users/web-asst/Sites/HeightmapTexture2_old/knacss/knacss.css",
 		"/Users/web-asst/Sites/HeightmapTexture2_old/index.html",
 		"/Users/web-asst/Sites/HeightmapTexture2_old/data/index.csv",
@@ -680,7 +688,6 @@
 		"/Users/web-asst/Desktop/DORIAN/index2.csv",
 		"/Users/web-asst/Sites/HeightmapTexture/data/index3.csv",
 		"/Users/web-asst/Sites/HeightmapTexture/data/index2.csv",
-		"/Users/web-asst/Sites/HeightmapTexture/data/world-countries-clean.json",
 		"/Users/web-asst/Desktop/DORIAN/PROG/Web/Three/Index-threemap-2013/main.js",
 		"/Users/web-asst/github/index.csv",
 		"/Users/web-asst/github/HeighmapTexture/data/world-countries-clean.json",
@@ -720,14 +727,7 @@
 		"/Users/web-asst/github/Archives/HeighmapTexture/js/blur.js",
 		"/Users/web-asst/github/Archives/HeighmapTexture/style.css",
 		"/Users/web-asst/Desktop/DORIAN/PROG/Web/Three/Index-threemap-2013_2/index.html",
-		"/Users/web-asst/Sites/Index-map-2014/index.html",
-		"/Users/web-asst/github/Index-threemap-2013/js/main.js",
-		"/Users/web-asst/github/Archives/HeighmapTexture/data/index.csv",
-		"/Users/web-asst/github/Archives/HeighmapTexture/data/world-countries-clean.json",
-		"/Users/web-asst/github/Archives/HeighmapTexture/ShaderTerrain.js",
-		"/Users/web-asst/github/Archives/HeighmapTexture/main.js",
-		"/Users/web-asst/github/Archives/HeighmapTexture/blur.js",
-		"/Users/web-asst/github/Archives/Index-map-perso/index.html"
+		"/Users/web-asst/Sites/Index-map-2014/index.html"
 	],
 	"find":
 	{
@@ -745,6 +745,14 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"BHR",
+			"console.log",
+			"console",
+			"dessinGraticule",
+			"\"\"\"",
+			"nbPictos",
+			"institutionsFR",
+			"getGeoCoord",
 			"lat",
 			"changement",
 			"#class",
@@ -864,15 +872,7 @@
 			"256",
 			"focusList",
 			"svgF",
-			"svgFond",
-			"Dan",
-			"Danem",
-			"28E",
-			"Gabon",
-			"hauteur",
-			"getScoreCurrentYear",
-			"57",
-			";"
+			"svgFond"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -905,27 +905,27 @@
 			[
 				{
 					"buffer": 0,
-					"file": "index.html",
+					"file": "javascript/main.js",
 					"settings":
 					{
-						"buffer_size": 4086,
+						"buffer_size": 6515,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								3961,
+								3961
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 3253.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
