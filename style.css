@@ -43,7 +43,7 @@ h2 {
 }
 
 .land {
-	fill: #888;
+	fill: #A2AFAE;
 	stroke: #fff;
 	stroke-width: 0.02em;
 }
@@ -78,11 +78,14 @@ h2 {
 
 
 .ligne {
-	stroke: #f00;
+	stroke: #580823;
 	stroke-width: 0.03em;
 	fill: none;
 }
 
+.texte{
+	font-size: 10px;
+}
 
 @media (max-width: 670px)
 {

@@ -1,4 +1,17 @@
 
+/*
+COULEURS RAPPORT INTERNET
+#FFFFFF
+#580823
+#AA0912
+#CD1335
+#398274
+#74B6AC
+#677877
+#A2AFAE
+*/
+
+
 
 var width, height;
 window.addEventListener("load", setup, false);
@@ -86,7 +99,7 @@ function setup()
 
 	function initData(collection)
 	{
-		
+
 		infosPictos = collection;
 
 		// LISTER INSTITUTIONS
@@ -135,7 +148,7 @@ function setup()
 			}
 
 			// COLORER PAYS
-			d3.select("#land"+d.iso).style("fill", "rgba(220, 0, 46, 0.6)");
+			d3.select("#land"+d.iso).style("fill", "#CD1335");
 
 		});
 
@@ -154,13 +167,33 @@ function setup()
 		var elem = cercle.selectAll(".arc")
 	      	.data(pie(institutions))
 	    	.enter().append("g")
-	      	.attr("class", "arc");
-	      	
+	      	.attr("class", "arc")
+	      	.attr("id", function(d){ return d.data[2]; })
+	      	.each(function(d){
+	      		
+	      		var elem = d3.select(this);
+	      		var nomInstitution = d.data[0].replace(/"/g,'');
+		    	var lignes = nomInstitution.split("</br>"); 
 
-		elem.append("text")
-			.attr("class", "texte")
-			.text(function(d) { return d.data[0].replace(/"/g,''); })
-			.attr("id", function(d){ return d.data[2]; });
+
+	      		
+		    	for(var i = 0; i < lignes.length; i++)
+		    	{
+
+	      			elem.append("text")
+						.attr("class", "texte")
+						.text(lignes[i])
+						.attr("y", i*10);
+				}
+
+			
+					
+				
+	      	});
+
+	    
+
+		
 	      
 
 
@@ -186,12 +219,12 @@ function setup()
 	{
 
 		var rayonCercle = Math.min(width, height) / 3;
-	    arc.outerRadius(rayonCercle - 10).innerRadius(rayonCercle - 70);
+	    arc.outerRadius(rayonCercle).innerRadius(rayonCercle);
 	    cercle.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
 
 		// TEXTES
-		d3.selectAll(".texte").each(function(d){
+		d3.selectAll(".arc").each(function(d){
 
 			d3.select(this).attr("transform", function(d) { 
 
@@ -212,6 +245,11 @@ function setup()
 		      	}
 
 
+		      	//var angleDegre = angle*180/Math.PI;
+		      	var tangenteX = Math.cos(angle-Math.PI/2)*100;
+		      	var tangenteY = Math.sin(angle-Math.PI/2)*100;
+		      	console.log(tangenteX+" / "+tangenteY);
+		      	
 
 
 
@@ -226,15 +264,28 @@ function setup()
 						var boxPays = document.getElementById("land"+ligne.attr("id")).getBBox();
 						var posPays = [ boxPays.x + (boxPays.width / 2), boxPays.y + (boxPays.height / 2) ];
 
-						var posTexte = [ centre[0]+(width/2), centre[1]+(height/2) ];
+						var posTexte = [ centre[0], centre[1] ];
 
 						// Q tangenteX tangenteY destX destY 
 						// C tangenteOrigineX tangenteOrigineY tangenteDestX tangenteDestY destX destY
-						
-						var formeLigne = "M "+posTexte[0]+" "+posTexte[1]+" Q "+posPays[0]+" "+(posPays[1]-(height/10))+" "+posPays[0]+" "+posPays[1];
-						// var formeLigne = "M "+posTexte[0]+" "+posTexte[1]
-						// 	+" C "+(posTexte[0]+50)+" "+(posTexte[1]+50)+" "
-						// 	+posPays[0]+" "+(posPays[1]-100)+" "+posPays[0]+" "+posPays[1];
+
+						tangenteX = posTexte[0]-tangenteX;
+						tangenteY = posTexte[1]-tangenteY;
+
+						//var formeLigne = "M "+posTexte[0]+" "+posTexte[1]+" Q "+posPays[0]+" "+(posPays[1]-(height/10))+" "+posPays[0]+" "+posPays[1];
+						var formeLigne = "M "+(posTexte[0]+width/2)+" "+(posTexte[1]+height/2)
+							+" C "+(tangenteX+width/2)+" "+(tangenteY+height/2)+" "
+							+posPays[0]+" "+(posPays[1]-100)+" "+posPays[0]+" "+posPays[1];
+
+
+						// cercle.append("line")
+						// 	.attr("x1", posTexte[0])
+				  //     		.attr("y1", posTexte[1])
+				  //     		.attr("x2", posTexte[0]-tangenteX)
+				  //     		.attr("y2", posTexte[1]-tangenteY)
+				  //     		.style("stroke", "blue")
+
+				  
 
 						ligne
 							.attr("d", formeLigne);
