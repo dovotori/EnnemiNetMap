@@ -79,7 +79,8 @@ h2 {
 
 .ligne {
 	stroke: #f00;
-	stroke-width: 0.02em;
+	stroke-width: 0.03em;
+	fill: none;
 }
 
 

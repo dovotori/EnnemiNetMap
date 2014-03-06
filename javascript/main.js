@@ -86,8 +86,8 @@ function setup()
 
 	function initData(collection)
 	{
+		
 		infosPictos = collection;
-
 
 		// LISTER INSTITUTIONS
 		institutions = [];	// [ nom, [pays concernes], id ]
@@ -126,18 +126,25 @@ function setup()
 					id = id.replace(/\'/g, '');
 					
 					institutions[cpt] = [ elem[i], [], id ];
+
+					// AJOUT DU PREMIER PAYS CONCERNEE
 					institutions[cpt][1].push(isoPays);
+					
 					cpt++;
 				}
 			}
 
+			// COLORER PAYS
+			d3.select("#land"+d.iso).style("fill", "rgba(220, 0, 46, 0.6)");
 
 		});
 
-//console.log(institutions);
 
 
 
+
+
+		// TEXTE
 		arc = d3.svg.arc();
 
 		var pie = d3.layout.pie()
@@ -161,7 +168,7 @@ function setup()
 		{
 			for(var j = 0; j < institutions[i][1].length; j++)
 			{
-				ligne.append("line")
+				ligne.append("path")
 					.attr("class", "ligne")
 					.attr("id", institutions[i][1][j])
 					.attr("data-institution", institutions[i][2]);
@@ -178,6 +185,10 @@ function setup()
 	function redraw()
 	{
 
+		var rayonCercle = Math.min(width, height) / 3;
+	    arc.outerRadius(rayonCercle - 10).innerRadius(rayonCercle - 70);
+	    cercle.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
 
 		// TEXTES
 		d3.selectAll(".texte").each(function(d){
@@ -189,14 +200,20 @@ function setup()
 				var centre = arc.centroid(d);
 		      	var angle = d.startAngle + (d.endAngle - d.startAngle);
 
+		      	// coté droit du cercle
 		      	if(angle < Math.PI)
 		      	{
 		      		d3.select(this).style("text-anchor", "start");
-		      		transform = "translate(" + centre + ")rotate("+map(angle, 0, Math.PI, -90, 90)+")"; 
+		      		transform = "translate(" + centre + ")rotate("+map(angle, 0, Math.PI, -90, 90)+")";
+		      	// cote gauche du cercle
 		      	} else {
 		      		d3.select(this).style("text-anchor", "end");
 		      		transform = "translate(" + centre + ")rotate("+map(angle, Math.PI, Math.PI*2, -90, 90)+")"; 
 		      	}
+
+
+
+
 
 		      	// LIGNES
 		      	d3.selectAll(".ligne").each(function(d){
@@ -211,11 +228,16 @@ function setup()
 
 						var posTexte = [ centre[0]+(width/2), centre[1]+(height/2) ];
 
+						// Q tangenteX tangenteY destX destY 
+						// C tangenteOrigineX tangenteOrigineY tangenteDestX tangenteDestY destX destY
+						
+						var formeLigne = "M "+posTexte[0]+" "+posTexte[1]+" Q "+posPays[0]+" "+(posPays[1]-(height/10))+" "+posPays[0]+" "+posPays[1];
+						// var formeLigne = "M "+posTexte[0]+" "+posTexte[1]
+						// 	+" C "+(posTexte[0]+50)+" "+(posTexte[1]+50)+" "
+						// 	+posPays[0]+" "+(posPays[1]-100)+" "+posPays[0]+" "+posPays[1];
+
 						ligne
-							.attr("x1", posTexte[0])
-							.attr("y1", posTexte[1])
-							.attr("x2", posPays[0])
-							.attr("y2", posPays[1]);
+							.attr("d", formeLigne);
 					}
 				});
 
@@ -301,11 +323,6 @@ function setup()
 			.attr("height", height);
 
 	    carte.selectAll("path").attr('d', path);
-
-	    var rayonCercle = Math.min(width, height) / 3;
-
-	    arc.outerRadius(rayonCercle - 10).innerRadius(rayonCercle - 70);
-	    cercle.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 	    
 
 	    redraw();
