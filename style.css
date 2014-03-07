@@ -1,3 +1,16 @@
+/*
+COULEURS RAPPORT INTERNET
+#FFFFFF
+#580823
+#AA0912
+#CD1335
+#398274
+#74B6AC
+#677877
+#A2AFAE
+*/
+
+
 @font-face {
 
     font-family: 'BebasNeueRegular';
@@ -78,13 +91,40 @@ h2 {
 
 
 .ligne {
-	stroke: #580823;
+	
 	stroke-width: 0.03em;
 	fill: none;
 }
 
+.ennemi {
+	stroke: #580823;
+}
+
+.salon{
+	stroke: #398274;	
+}
+
 .texte{
 	font-size: 10px;
+}
+
+.arc{
+	cursor: pointer;
+}
+
+.nonhoverTexte
+{
+	opacity: 0.2;
+}
+
+.hoverTexte
+{
+	opacity: 1;
+}
+
+.focusLand
+{
+	fill: #CD1335;
 }
 
 @media (max-width: 670px)
@@ -93,14 +133,6 @@ h2 {
 		width: 100%;
 	}
 }
-
-
-
-
-
-
-
-
 
 
 

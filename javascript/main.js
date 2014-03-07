@@ -1,15 +1,4 @@
 
-/*
-COULEURS RAPPORT INTERNET
-#FFFFFF
-#580823
-#AA0912
-#CD1335
-#398274
-#74B6AC
-#677877
-#A2AFAE
-*/
 
 
 
@@ -50,6 +39,7 @@ function setup()
 	
 	var arc;
 	var institutions;
+	var langue = "FR";
 
 
 
@@ -63,7 +53,7 @@ function setup()
 
 	queue()
 		.defer(lireJson, "data/world-countries.json")
-		.defer(lireCsv, "data/data.csv")
+		.defer(lireCsv, "data/data2.csv")
 		.awaitAll(ready);
 	
 
@@ -100,19 +90,26 @@ function setup()
 	function initData(collection)
 	{
 
-		infosPictos = collection;
 
 		// LISTER INSTITUTIONS
-		institutions = [];	// [ nom, [pays concernes], id ]
+		institutions = [];	// [ nom, [pays concernes, [coorCapitale] ], id, [exactions]  ]
 
 		var cpt = 0;
 
 		collection.forEach(function(d){
 
+
+			
+
+
+
 			var isoPays = d.iso;
 
-			// AFFECTER INSTITUTIONS			
-			var elem = d.institutionsFR.split(',');
+			// AFFECTER INSTITUTIONS
+			if(langue == "FR")			
+				var elem = d.institutionsFR.split(',');
+			else 
+				var elem = d.institutionsEN.split(',');
 
 			for(var i = 0; i < elem.length; i++)
 			{
@@ -128,7 +125,15 @@ function setup()
 					{	
 						found = true;
 						// AJOUT DES PAYS CONCERNEES PAR L'INSTITUTION
-						institutions[j][1].push(isoPays);
+						institutions[j][1].push([isoPays, d.latitudeCapitale, d.longitudeCapitale ]);
+
+						// COLORER PAYS
+						elem[i] = elem[i].replace(/"/g, '');
+						if(elem[i] != "TAC" && elem[i] != "Milipol" && elem[i] != "ISS World")
+						{
+							d3.select("#land"+isoPays).attr("class", "land focusLand");	
+						}
+
 					}
 				}
 
@@ -138,17 +143,32 @@ function setup()
 					var id = elem[i].replace(/[-éè"() ]/g,'');
 					id = id.replace(/\'/g, '');
 					
-					institutions[cpt] = [ elem[i], [], id ];
+
+					// EXACTIONS
+					var exaction = d.exactions.split(',');
+					for(var j = 0; j < exaction.length; j++)
+					{
+						exaction[j] = exaction[j].replace(/"/g, '');
+					}
+
 
 					// AJOUT DU PREMIER PAYS CONCERNEE
-					institutions[cpt][1].push(isoPays);
+					institutions[cpt] = [ elem[i], [], id, exaction ];
+					institutions[cpt][1].push([isoPays, d.latitudeCapitale, d.longitudeCapitale ]);
+
+					// COLORER PAYS
+					elem[i] = elem[i].replace(/"/g, '');
+					if(elem[i] != "TAC" && elem[i] != "Milipol" && elem[i] != "ISS World")
+					{
+						d3.select("#land"+isoPays).attr("class", "land focusLand");	
+					}
 					
 					cpt++;
 				}
 			}
 
-			// COLORER PAYS
-			d3.select("#land"+d.iso).style("fill", "#CD1335");
+			
+
 
 		});
 
@@ -170,26 +190,90 @@ function setup()
 	      	.attr("class", "arc")
 	      	.attr("id", function(d){ return d.data[2]; })
 	      	.each(function(d){
-	      		
+
+	      		var angle = d.startAngle + (d.endAngle - d.startAngle);
+	      		var forme = [];
+	      		forme[0] = "M24.869 -17.798 L17.798 -24.869 L0 -7.071 L-17.797 -24.869 L-24.869 -17.798 L-7.071 0 L-24.869 17.798 L-17.798 24.869 L0 7.071 L17.798 24.869 L24.869 17.798 L7.071 0Z";
+	      		forme[1] = "M24.869 -17.798 L17.798 -24.869 L0 -7.071 L-17.797 -24.869 L-24.869 -17.798 L-7.071 0 L-24.869 17.798 L-17.798 24.869 L0 7.071 L17.798 24.869 L24.869 17.798 L7.071 0Z";
+	      		forme[2] = "M24.869 -17.798 L17.798 -24.869 L0 -7.071 L-17.797 -24.869 L-24.869 -17.798 L-7.071 0 L-24.869 17.798 L-17.798 24.869 L0 7.071 L17.798 24.869 L24.869 17.798 L7.071 0Z";
+	      		forme[3] = "M24.869 -17.798 L17.798 -24.869 L0 -7.071 L-17.797 -24.869 L-24.869 -17.798 L-7.071 0 L-24.869 17.798 L-17.798 24.869 L0 7.071 L17.798 24.869 L24.869 17.798 L7.071 0Z";
+
+
 	      		var elem = d3.select(this);
 	      		var nomInstitution = d.data[0].replace(/"/g,'');
-		    	var lignes = nomInstitution.split("</br>"); 
+		    	var lignes = nomInstitution.split("_");
+		    	var nbPictos = d.data[3].length;
 
 
-	      		
-		    	for(var i = 0; i < lignes.length; i++)
-		    	{
 
-	      			elem.append("text")
-						.attr("class", "texte")
-						.text(lignes[i])
-						.attr("y", i*10);
-				}
 
-			
+
+		    	if(angle < Math.PI)
+		      	{
+		      		// FOND
+		      		elem.append("rect")
+						.attr("class", "fond")
+						.attr("x", 0).attr("y", -40)
+						.attr("width", 200).attr("height", 80)
+						//.style("fill", "rgba(0,0,0,0.5)");
+						.style("fill", "transparent");
+
+					// LIGNES
+		      		for(var i = 0; i < lignes.length; i++)
+		    		{
+
+		    		
+		      			elem.append("text")
+							.attr("class", "texte")
+							.text(lignes[i])
+							.attr("y", i*10).attr("x", 20);
+					}
+
+					// PICTOS
+			    	for(var i = 0; i < nbPictos; i++)
+			    	{
+			    		elem.append("path")
+							.attr("class", "picto")
+							.attr("d", forme[i])
+							.attr("transform", "translate("+(26+i*20)+", 14)scale(0.2)");
+			    	}
+		      	} else {
+		      		// FOND
+		      		elem.append("rect")
+						.attr("class", "fond")
+						.attr("x", -200).attr("y", -40)
+						.attr("width", 200).attr("height", 80)
+						//.style("fill", "rgba(0,0,0,0.5)");
+						.style("fill", "transparent");
+
+					// LIGNES
+		      		for(var i = 0; i < lignes.length; i++)
+		    		{
+
+		    		
+		      			elem.append("text")
+							.attr("class", "texte")
+							.text(lignes[i])
+							.attr("y", i*10).attr("x", -20);
+					}
+
+					// PICTOS
+			    	for(var i = 0; i < nbPictos; i++)
+			    	{
+			    		elem.append("path")
+							.attr("class", "picto")
+							.attr("d", forme[i])
+							.attr("transform", "translate("+(-(20*nbPictos+6)+i*20)+", -14)scale(0.2)");
+			    	}
+		      	}
+
+		
 					
 				
-	      	});
+	      	})
+	      	.on("mouseover",function(d){ hoverTexte(d); })
+			.on("mouseout", function(d)	{ outTexte(d); })
+	      	.on("click", 	function(d){ clicTexte(d); });
 
 	    
 
@@ -201,10 +285,22 @@ function setup()
 		{
 			for(var j = 0; j < institutions[i][1].length; j++)
 			{
+						
 				ligne.append("path")
-					.attr("class", "ligne")
-					.attr("id", institutions[i][1][j])
-					.attr("data-institution", institutions[i][2]);
+					.attr("class", function(d){
+						var nomInstitution = institutions[i][0].replace(/"/g,'');
+						if(nomInstitution != "TAC" && nomInstitution != "Milipol" && nomInstitution != "ISS World")
+						{
+							return "ligne ennemi";
+						} else {
+							return "ligne salon";
+						}
+					})
+					.attr("id", institutions[i][1][j][0])
+					.attr("data-institution", institutions[i][2])
+					.attr("data-coorCapitaleLat", institutions[i][1][j][1])
+					.attr("data-coorCapitaleLong", institutions[i][1][j][2]);
+					
 			}
 		}
 
@@ -245,10 +341,8 @@ function setup()
 		      	}
 
 
-		      	//var angleDegre = angle*180/Math.PI;
-		      	var tangenteX = Math.cos(angle-Math.PI/2)*100;
-		      	var tangenteY = Math.sin(angle-Math.PI/2)*100;
-		      	console.log(tangenteX+" / "+tangenteY);
+		      	
+		      	
 		      	
 
 
@@ -261,29 +355,40 @@ function setup()
 		      		if(ligne.attr("data-institution") == id)
 		      		{
 
-						var boxPays = document.getElementById("land"+ligne.attr("id")).getBBox();
-						var posPays = [ boxPays.x + (boxPays.width / 2), boxPays.y + (boxPays.height / 2) ];
+						// var boxPays = document.getElementById("land"+ligne.attr("id")).getBBox();
+						// var posPays = [ boxPays.x + (boxPays.width / 2), boxPays.y + (boxPays.height / 2) ];
+						
 
-						var posTexte = [ centre[0], centre[1] ];
+						var posPays = getGeoCoord(ligne.attr("data-coorCapitaleLat"), ligne.attr("data-coorCapitaleLong"));
+						var posTexte = [ centre[0]+width/2, centre[1]+height/2 ];
 
-						// Q tangenteX tangenteY destX destY 
-						// C tangenteOrigineX tangenteOrigineY tangenteDestX tangenteDestY destX destY
 
-						tangenteX = posTexte[0]-tangenteX;
+						// CALCUL TANGENTE DU PAYS
+						var longueurTangente = Math.min((distanceEntrePoints(posPays, posTexte) / 4), 200);
+						var tangentePaysX = longueurTangente;
+						var tangentePaysY = longueurTangente;
+						if(posPays[0] > posTexte[0]){ tangentePaysX = -longueurTangente; }
+						if(posPays[1] > posTexte[1]){ tangentePaysY = -longueurTangente; }
+						tangentePaysX = 0;
+
+						// CALCUL TANGENTE DU TEXTE
+		      			var tangenteX = Math.cos(angle-Math.PI/2)*50;
+		      			var tangenteY = Math.sin(angle-Math.PI/2)*50;
+		      			tangenteX = posTexte[0]-tangenteX;
 						tangenteY = posTexte[1]-tangenteY;
 
-						//var formeLigne = "M "+posTexte[0]+" "+posTexte[1]+" Q "+posPays[0]+" "+(posPays[1]-(height/10))+" "+posPays[0]+" "+posPays[1];
-						var formeLigne = "M "+(posTexte[0]+width/2)+" "+(posTexte[1]+height/2)
-							+" C "+(tangenteX+width/2)+" "+(tangenteY+height/2)+" "
-							+posPays[0]+" "+(posPays[1]-100)+" "+posPays[0]+" "+posPays[1];
+						var formeLigne = "M "+(posTexte[0])+" "+(posTexte[1])
+							+" C "+(tangenteX)+" "+(tangenteY)+" "
+							+(posPays[0]+tangentePaysX)+" "+(posPays[1]+tangentePaysY)+" "+posPays[0]+" "+posPays[1];
 
 
-						// cercle.append("line")
-						// 	.attr("x1", posTexte[0])
-				  //     		.attr("y1", posTexte[1])
-				  //     		.attr("x2", posTexte[0]-tangenteX)
-				  //     		.attr("y2", posTexte[1]-tangenteY)
-				  //     		.style("stroke", "blue")
+// debug line
+// svg.append("line")
+// 	.attr("x1", posTexte[0])
+//     		.attr("y1", posTexte[1])
+//     		.attr("x2", tangenteX)
+//     		.attr("y2", tangenteY)
+//     		.style("stroke", "blue")
 
 				  
 
@@ -344,7 +449,78 @@ function setup()
 
 
 
+	function distanceEntrePoints( point1, point2 )
+    {
+	    var xs = 0;
+	    var ys = 0;
+	     
+	    xs = point2[0] - point1[0];
+	    xs = xs * xs;
+	     
+	    ys = point2[1] - point1[1];
+	    ys = ys * ys;
+	     
+	    return Math.sqrt( xs + ys );
+    }
 
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// INTERACTION
+
+
+function hoverTexte(d)
+{
+	var nomInstitution = d.data[2];
+
+	cercle.selectAll(".arc").attr("class", "arc nonhoverTexte");	
+	ligne.selectAll(".ligne").style("stroke", "#aaa");
+	carte.selectAll(".land").style("fill", "#A2AFAE");
+
+	var target = cercle.select("#"+nomInstitution);
+	target.attr("class", "arc hoverTexte");
+
+	ligne.selectAll(".ligne").each(function(d){
+
+		 var ligne = d3.select(this);
+		 if(ligne.attr("data-institution") == nomInstitution)
+		 {
+		 	// CIBLER LE PAYS
+		 	var paysCarte = carte.select("#land"+ligne.attr("id"));
+
+		 	if(nomInstitution != "TAC" && nomInstitution != "Milipol" && nomInstitution != "ISSWorld")
+			{
+		 		ligne.style("stroke", "#580823")
+		 			.style("stroke-width", "0.1em");
+		 	} else {
+		 		ligne.style("stroke", "#398274") 
+		 			.style("stroke-width", "0.1em");
+		 	}
+		 	
+		 	paysCarte.style("fill", null);
+		 }
+	});
+}
+
+
+
+function outTexte(d)
+{
+	carte.selectAll(".land").style("fill", null);
+	cercle.selectAll(".arc").attr("class", "arc");	
+	ligne.selectAll(".ligne").style("stroke", null)
+		.style("stroke-width", "0.03em");
+}
+
+
+
+function clicTexte(d)
+{
+	
+}
 
 
 
