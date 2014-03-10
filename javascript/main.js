@@ -214,7 +214,6 @@ function setup()
 						.attr("class", "fond")
 						.attr("x", 0).attr("y", -40)
 						.attr("width", 200).attr("height", 80)
-						//.style("fill", "rgba(0,0,0,0.5)");
 						.style("fill", "transparent");
 
 
@@ -248,12 +247,9 @@ function setup()
 			    	{
 			    		var idPicto = d.data[3][i].replace(/ /g, "");
 
-			    		
-
-
 						elem.append("use")
 							.attr("xlink:href","#picto"+idPicto)
-							.attr("transform", "translate("+(20+25*(i))+",-25) scale(0.15)");
+							.attr("transform", "translate("+(20+25*(i))+", -25) scale(0.15)");
 						
 			    	}
 
@@ -351,13 +347,16 @@ function setup()
 		      	var angle = d.startAngle + (d.endAngle - d.startAngle);
 
 				// coté droit du cercle
-		      	if(angle < 3*Math.PI/8 )
-		      	{
-		      		transform = "translate(" + centre + ")rotate("+map(angle, 0, Math.PI, -90, 45)+")";
-		      	// cote gauche du cercle
-		      	} else {
-					transform = "translate(" + centre + ")rotate("+map(angle, 0, Math.PI, -90, 90)+")";
-		      	}
+		      	//if(angle < 3 * Math.PI / 8 )
+		      	//{	
+		      		//d3.select(this).style("text-anchor", "start");
+		      		console.log(angle+" // "+(angle * 180 / Math.PI));
+		      		transform = "translate(" + centre + ")rotate("+ ((angle * 180 / Math.PI)-90) +")"; // -90 depart vertical haut
+		      	// coté gauche du cercle
+		   //    	} else {
+		   //    		//d3.select(this).style("text-anchor", "start");
+					// transform = "translate(" + centre + ")rotate("+ map(angle, 0, Math.PI, -90, 90) +")";
+		   //    	}
 
 
 		      	
