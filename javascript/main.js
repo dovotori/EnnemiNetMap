@@ -39,7 +39,7 @@ function setup()
 	
 	var arc;
 	var institutions;
-	var langue = "FR";
+	var langue = "EN";
 
 
 
@@ -53,7 +53,7 @@ function setup()
 
 	queue()
 		.defer(lireJson, "data/world-countries.json")
-		.defer(lireCsv, "data/data2.csv")
+		.defer(lireCsv, "data/data.csv")
 		.awaitAll(ready);
 	
 
@@ -92,7 +92,7 @@ function setup()
 
 
 		// LISTER INSTITUTIONS
-		institutions = [];	// [ nom, [pays concernes, [coorCapitale] ], id, [exactions]  ]
+		institutions = [];	// [ nom, [pays concernes, [coorCapitale], nomPays ], id, [exactions]  ]
 
 		var cpt = 0;
 
@@ -124,8 +124,10 @@ function setup()
 					if(elem[i] == institutions[j][0])
 					{	
 						found = true;
+						var nomPays = d.nom;
+						if(langue != "FR"){ nomPays = d.name; }
 						// AJOUT DES PAYS CONCERNEES PAR L'INSTITUTION
-						institutions[j][1].push([isoPays, d.latitudeCapitale, d.longitudeCapitale ]);
+						institutions[j][1].push([isoPays, d.latitudeCapitale, d.longitudeCapitale, nomPays ]);
 
 						// COLORER PAYS
 						elem[i] = elem[i].replace(/"/g, '');
@@ -154,7 +156,9 @@ function setup()
 
 					// AJOUT DU PREMIER PAYS CONCERNEE
 					institutions[cpt] = [ elem[i], [], id, exaction ];
-					institutions[cpt][1].push([isoPays, d.latitudeCapitale, d.longitudeCapitale ]);
+					var nomPays = d.nom;
+					if(langue != "FR"){ nomPays = d.name; }
+					institutions[cpt][1].push([isoPays, d.latitudeCapitale, d.longitudeCapitale, nomPays	 ]);
 
 					// COLORER PAYS
 					elem[i] = elem[i].replace(/"/g, '');
@@ -192,24 +196,19 @@ function setup()
 	      	.each(function(d){
 
 	      		var angle = d.startAngle + (d.endAngle - d.startAngle);
-	      		var forme = [];
-	      		forme[0] = "M24.869 -17.798 L17.798 -24.869 L0 -7.071 L-17.797 -24.869 L-24.869 -17.798 L-7.071 0 L-24.869 17.798 L-17.798 24.869 L0 7.071 L17.798 24.869 L24.869 17.798 L7.071 0Z";
-	      		forme[1] = "M24.869 -17.798 L17.798 -24.869 L0 -7.071 L-17.797 -24.869 L-24.869 -17.798 L-7.071 0 L-24.869 17.798 L-17.798 24.869 L0 7.071 L17.798 24.869 L24.869 17.798 L7.071 0Z";
-	      		forme[2] = "M24.869 -17.798 L17.798 -24.869 L0 -7.071 L-17.797 -24.869 L-24.869 -17.798 L-7.071 0 L-24.869 17.798 L-17.798 24.869 L0 7.071 L17.798 24.869 L24.869 17.798 L7.071 0Z";
-	      		forme[3] = "M24.869 -17.798 L17.798 -24.869 L0 -7.071 L-17.797 -24.869 L-24.869 -17.798 L-7.071 0 L-24.869 17.798 L-17.798 24.869 L0 7.071 L17.798 24.869 L24.869 17.798 L7.071 0Z";
-
 
 	      		var elem = d3.select(this);
 	      		var nomInstitution = d.data[0].replace(/"/g,'');
 		    	var lignes = nomInstitution.split("_");
 		    	var nbPictos = d.data[3].length;
+		    	
+    			var nomPays = d.data[1][0][3];
 
 
 
 
-
-		    	if(angle < Math.PI)
-		      	{
+		    	// if(angle < Math.PI)
+		     //  	{
 		      		// FOND
 		      		elem.append("rect")
 						.attr("class", "fond")
@@ -218,54 +217,76 @@ function setup()
 						//.style("fill", "rgba(0,0,0,0.5)");
 						.style("fill", "transparent");
 
-					// LIGNES
-		      		for(var i = 0; i < lignes.length; i++)
-		    		{
 
-		    		
+						var i = 0
+					// LIGNES
+		      		for(i; i < lignes.length; i++)
+		    		{
+		    			if (lignes.length == 3 && i == lignes.length-1 && nomInstitution != "ISS World" && nomInstitution != "TAC" && nomInstitution != "Milipol"){
+		    				lignes[i] = lignes[i] +" • "+nomPays; 
+		    			}
+
+
 		      			elem.append("text")
 							.attr("class", "texte")
 							.text(lignes[i])
 							.attr("y", i*10).attr("x", 20);
+
+						if (lignes.length == (i+1) && lignes.length != 3 && nomInstitution != "ISS World" && nomInstitution != "TAC" && nomInstitution != "Milipol" ){
+							elem.append("text")
+								.attr("class", "texte")
+								.text("• "+nomPays)
+								.attr("y", (i+1)*10).attr("x", 20);	
+						}
+
 					}
+
+
 
 					// PICTOS
 			    	for(var i = 0; i < nbPictos; i++)
 			    	{
-			    		elem.append("path")
-							.attr("class", "picto")
-							.attr("d", forme[i])
-							.attr("transform", "translate("+(26+i*20)+", 14)scale(0.2)");
-			    	}
-		      	} else {
-		      		// FOND
-		      		elem.append("rect")
-						.attr("class", "fond")
-						.attr("x", -200).attr("y", -40)
-						.attr("width", 200).attr("height", 80)
-						//.style("fill", "rgba(0,0,0,0.5)");
-						.style("fill", "transparent");
+			    		var idPicto = d.data[3][i].replace(/ /g, "");
 
-					// LIGNES
-		      		for(var i = 0; i < lignes.length; i++)
-		    		{
+			    		
+
+
+						elem.append("use")
+							.attr("xlink:href","#picto"+idPicto)
+							.attr("transform", "translate("+(20+25*(i))+",-25) scale(0.15)");
+						
+			    	}
+
+		   //    	} else {
+		   //    		// FOND
+		   //    		elem.append("rect")
+					// 	.attr("class", "fond")
+					// 	.attr("x", -200).attr("y", -40)
+					// 	.attr("width", 200).attr("height", 80)
+					// 	//.style("fill", "rgba(0,0,0,0.5)");
+					// 	.style("fill", "transparent");
+
+					// // LIGNES
+		   //    		for(var i = 0; i < lignes.length; i++)
+		   //  		{
 
 		    		
-		      			elem.append("text")
-							.attr("class", "texte")
-							.text(lignes[i])
-							.attr("y", i*10).attr("x", -20);
-					}
+		   //    			elem.append("text")
+					// 		.attr("class", "texte")
+					// 		.text(lignes[i])
+					// 		.attr("y", i*10).attr("x", -20);
+					// }
 
-					// PICTOS
-			    	for(var i = 0; i < nbPictos; i++)
-			    	{
-			    		elem.append("path")
-							.attr("class", "picto")
-							.attr("d", forme[i])
-							.attr("transform", "translate("+(-(20*nbPictos+6)+i*20)+", -14)scale(0.2)");
-			    	}
-		      	}
+					// // PICTOS
+			  //   	for(var i = 0; i < nbPictos; i++)
+			  //   	{
+					// 	var idPicto = d.data[3][i].replace(/ /g, "");
+
+					// 	elem.append("use")
+					// 		.attr("xlink:href","#picto"+idPicto)
+					// 		.attr("transform", "scale(0.2)");
+			  //   	}
+		   //    	}
 
 		
 					
@@ -299,12 +320,12 @@ function setup()
 					.attr("id", institutions[i][1][j][0])
 					.attr("data-institution", institutions[i][2])
 					.attr("data-coorCapitaleLat", institutions[i][1][j][1])
-					.attr("data-coorCapitaleLong", institutions[i][1][j][2]);
+					.attr("data-coorCapitaleLong", institutions[i][1][j][2])
 					
 			}
 		}
 
-
+		
 
 	}
 
@@ -329,15 +350,13 @@ function setup()
 				var centre = arc.centroid(d);
 		      	var angle = d.startAngle + (d.endAngle - d.startAngle);
 
-		      	// coté droit du cercle
-		      	if(angle < Math.PI)
+				// coté droit du cercle
+		      	if(angle < 3*Math.PI/8 )
 		      	{
-		      		d3.select(this).style("text-anchor", "start");
-		      		transform = "translate(" + centre + ")rotate("+map(angle, 0, Math.PI, -90, 90)+")";
+		      		transform = "translate(" + centre + ")rotate("+map(angle, 0, Math.PI, -90, 45)+")";
 		      	// cote gauche du cercle
 		      	} else {
-		      		d3.select(this).style("text-anchor", "end");
-		      		transform = "translate(" + centre + ")rotate("+map(angle, Math.PI, Math.PI*2, -90, 90)+")"; 
+					transform = "translate(" + centre + ")rotate("+map(angle, 0, Math.PI, -90, 90)+")";
 		      	}
 
 
@@ -539,6 +558,7 @@ function clicTexte(d)
 	
 	    width = window.innerWidth; 
 		height = window.innerHeight;
+		height = 1000;
 
 	    // update projection
 	    projection
