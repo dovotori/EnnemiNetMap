@@ -127,6 +127,11 @@ h2 {
 	fill: #CD1335;
 }
 
+#imageCarte{
+	display: block;
+	margin: 0 auto;
+}
+
 @media (max-width: 670px)
 {
 	.articleTexte {

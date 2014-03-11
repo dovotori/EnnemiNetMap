@@ -12,8 +12,9 @@ function setup()
 {
 	
 	var projection = d3.geo
-		//.azimuthalEqualArea();
-		.mercator();
+		.azimuthalEqualArea();
+		//.azimuthalEquidistant();
+		//.mercator();
 		//.conicEquidistant();
 		//.orthographic();
 	
@@ -22,6 +23,7 @@ function setup()
 	var graticule = d3.geo.graticule();
 	
 	var svg = d3.select("#svg");
+	svg.style("display", "none");
 	
 	// svg.append("defs").append("path")
 	// 	.datum({type: "Sphere"})
@@ -39,7 +41,9 @@ function setup()
 	
 	var arc;
 	var institutions;
-	var langue = "EN";
+	var langue = "FR";
+	var angleMin = 15 * Math.PI / 8;
+	var angleMax = 15*Math.PI/16;
 
 
 
@@ -54,6 +58,7 @@ function setup()
 	queue()
 		.defer(lireJson, "data/world-countries.json")
 		.defer(lireCsv, "data/data.csv")
+		.defer(lireCsv, "data/links.csv")
 		.awaitAll(ready);
 	
 
@@ -63,8 +68,10 @@ function setup()
 	{
 
 		dessinerCarte(results[0]);
-		initData(results[1]);
+		initData(results[1], results[2]);
 		resize();
+		svg.style("display", "block");
+		document.getElementById("imageCarte").style.display = "none";
 
 	}
 
@@ -87,23 +94,20 @@ function setup()
 
 
 
-	function initData(collection)
+	function initData(collection, links)
 	{
 
 
 		// LISTER INSTITUTIONS
-		institutions = [];	// [ nom, [pays concernes, [coorCapitale], nomPays ], id, [exactions]  ]
+		institutions = [];	// [ nom, [pays concernes, [coorCapitale], nomPays ], id, [exactions], lien ]
 
 		var cpt = 0;
 
 		collection.forEach(function(d){
 
 
-			
-
-
-
 			var isoPays = d.iso;
+
 
 			// AFFECTER INSTITUTIONS
 			if(langue == "FR")			
@@ -111,8 +115,10 @@ function setup()
 			else 
 				var elem = d.institutionsEN.split(',');
 
+
 			for(var i = 0; i < elem.length; i++)
 			{
+				elem[i] = elem[i].replace(/"/g, '');
 
 				var found = false;
 
@@ -142,8 +148,11 @@ function setup()
 
 				// NEW INSTITUTION
 				if(!found){
+
 					var id = elem[i].replace(/[-éè"() ]/g,'');
 					id = id.replace(/\'/g, '');
+					id = id.replace(/[\n]/gi, "" );
+					elem[i] = elem[i].replace(/"/g, '');
 					
 
 					// EXACTIONS
@@ -154,14 +163,40 @@ function setup()
 					}
 
 
+					// LIEN
+					var link = "#";
+					links.forEach(function(d){
+
+						if(elem[i] != "TAC" && elem[i] != "Milipol" && elem[i] != "ISS World")
+						{
+							if(d.iso == isoPays)
+							{ 
+								if(langue == "FR"){
+									link = d.lien;
+								} else {
+									link = d.link;
+								}
+							}
+						} else {
+							// SALONS
+							if(d.iso == "salon"){
+								if(langue == "FR"){
+									link = d.lien;
+								} else {
+									link = d.link;
+								}
+							}
+						}
+					});
+
 					// AJOUT DU PREMIER PAYS CONCERNEE
-					institutions[cpt] = [ elem[i], [], id, exaction ];
+					institutions[cpt] = [ elem[i], [], id, exaction, link ];
 					var nomPays = d.nom;
 					if(langue != "FR"){ nomPays = d.name; }
-					institutions[cpt][1].push([isoPays, d.latitudeCapitale, d.longitudeCapitale, nomPays	 ]);
+					institutions[cpt][1].push([ isoPays, d.latitudeCapitale, d.longitudeCapitale, nomPays ]);
 
 					// COLORER PAYS
-					elem[i] = elem[i].replace(/"/g, '');
+					
 					if(elem[i] != "TAC" && elem[i] != "Milipol" && elem[i] != "ISS World")
 					{
 						d3.select("#land"+isoPays).attr("class", "land focusLand");	
@@ -205,87 +240,80 @@ function setup()
     			var nomPays = d.data[1][0][3];
 
 
-
-
-		    	// if(angle < Math.PI)
-		     //  	{
-		      		// FOND
-		      		elem.append("rect")
-						.attr("class", "fond")
-						.attr("x", 0).attr("y", -40)
-						.attr("width", 200).attr("height", 80)
-						.style("fill", "transparent");
-
-
-						var i = 0
-					// LIGNES
-		      		for(i; i < lignes.length; i++)
-		    		{
-		    			if (lignes.length == 3 && i == lignes.length-1 && nomInstitution != "ISS World" && nomInstitution != "TAC" && nomInstitution != "Milipol"){
-		    				lignes[i] = lignes[i] +" • "+nomPays; 
-		    			}
-
-
-		      			elem.append("text")
-							.attr("class", "texte")
-							.text(lignes[i])
-							.attr("y", i*10).attr("x", 20);
-
-						if (lignes.length == (i+1) && lignes.length != 3 && nomInstitution != "ISS World" && nomInstitution != "TAC" && nomInstitution != "Milipol" ){
-							elem.append("text")
-								.attr("class", "texte")
-								.text("• "+nomPays)
-								.attr("y", (i+1)*10).attr("x", 20);	
+	      		// FOND
+	      		elem.append("rect")
+					.attr("class", "fond")
+					.attr("x", function(){
+						if( angle < angleMax || angle > angleMin )
+	      				{
+							return 0;
+						} else {
+							return -200;
 						}
+					})
+					.attr("y", -40)
+					.attr("width", 200)
+					.attr("height", 80)
+					.style("fill", "transparent");
+					//.style("fill", "#f00"); 
 
+
+				
+				// LIGNES
+				var i = 0;
+	      		for(i; i < lignes.length; i++)
+	    		{
+	    			if (lignes.length == 3 && i == lignes.length-1 && nomInstitution != "ISS World" && nomInstitution != "TAC" && nomInstitution != "Milipol"){
+	    				lignes[i] = lignes[i] +" • "+nomPays; 
+	    			}
+
+	      			elem.append("text")
+						.attr("class", "texte")
+						.text(lignes[i])
+						.attr("y", i*10)
+						.attr("x", function(){ 
+							if( angle < angleMax || angle > angleMin )
+	      					{
+								return 20;
+							} else {
+								return -20;
+							}
+						});
+
+					if (lignes.length == (i+1) && lignes.length != 3 && nomInstitution != "ISS World" && nomInstitution != "TAC" && nomInstitution != "Milipol" ){
+						elem.append("text")
+							.attr("class", "texte")
+							.text("• "+nomPays)
+							.attr("y", (i+1)*10).attr("x", function(){
+								if( angle < angleMax || angle > angleMin )
+	      						{
+									return 20;
+								} else {
+									return -20;
+								}
+							});	
 					}
 
+				}
 
+				// PICTOS
+		    	for(var i = 0; i < nbPictos; i++)
+		    	{
+		    		var idPicto = d.data[3][i].replace(/ /g, "");
 
-					// PICTOS
-			    	for(var i = 0; i < nbPictos; i++)
-			    	{
-			    		var idPicto = d.data[3][i].replace(/ /g, "");
-
-						elem.append("use")
-							.attr("xlink:href","#picto"+idPicto)
-							.attr("transform", "translate("+(20+25*(i))+", -25) scale(0.15)");
-						
-			    	}
-
-		   //    	} else {
-		   //    		// FOND
-		   //    		elem.append("rect")
-					// 	.attr("class", "fond")
-					// 	.attr("x", -200).attr("y", -40)
-					// 	.attr("width", 200).attr("height", 80)
-					// 	//.style("fill", "rgba(0,0,0,0.5)");
-					// 	.style("fill", "transparent");
-
-					// // LIGNES
-		   //    		for(var i = 0; i < lignes.length; i++)
-		   //  		{
-
-		    		
-		   //    			elem.append("text")
-					// 		.attr("class", "texte")
-					// 		.text(lignes[i])
-					// 		.attr("y", i*10).attr("x", -20);
-					// }
-
-					// // PICTOS
-			  //   	for(var i = 0; i < nbPictos; i++)
-			  //   	{
-					// 	var idPicto = d.data[3][i].replace(/ /g, "");
-
-					// 	elem.append("use")
-					// 		.attr("xlink:href","#picto"+idPicto)
-					// 		.attr("transform", "scale(0.2)");
-			  //   	}
-		   //    	}
-
-		
+					elem.append("use")
+						.attr("class", "picto")
+						.attr("xlink:href","#picto"+idPicto)
+						.attr("transform", function(){ 
+							if( angle < angleMax || angle > angleMin )
+	      					{
+								return "translate("+(20+25*(i))+", -25) scale(0.15)";
+							} else {
+								return "translate("+(-40+25*(-i))+", -25) scale(0.15)";
+							}
+						});
 					
+		    	}
 				
 	      	})
 	      	.on("mouseover",function(d){ hoverTexte(d); })
@@ -331,12 +359,19 @@ function setup()
 	function redraw()
 	{
 
-		var rayonCercle = Math.min(width, height) / 3;
+		var rayonCercle = Math.min(width, height) / 5.5;
 	    arc.outerRadius(rayonCercle).innerRadius(rayonCercle);
 	    cercle.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
 
-		// TEXTES
+	    // TEXTE
+	    d3.selectAll(".texte").style("font-size", +(Math.min(width, height) / 120)+"px");
+
+	    // PICTO
+	    // d3.selectAll(".picto").attr("transform", "scale("+(Math.min(width, height) / 120)+")");
+
+
+		// ARCS
 		d3.selectAll(".arc").each(function(d){
 
 			d3.select(this).attr("transform", function(d) { 
@@ -347,16 +382,15 @@ function setup()
 		      	var angle = d.startAngle + (d.endAngle - d.startAngle);
 
 				// coté droit du cercle
-		      	//if(angle < 3 * Math.PI / 8 )
-		      	//{	
-		      		//d3.select(this).style("text-anchor", "start");
-		      		console.log(angle+" // "+(angle * 180 / Math.PI));
-		      		transform = "translate(" + centre + ")rotate("+ ((angle * 180 / Math.PI)-90) +")"; // -90 depart vertical haut
+		      	if( angle < angleMax || angle > angleMin )
+		      	{	
+		      		d3.select(this).style("text-anchor", "start");
+		      		transform = "translate(" + centre + ")rotate("+ ((angle * 180 / Math.PI)-90) +")"; 
 		      	// coté gauche du cercle
-		   //    	} else {
-		   //    		//d3.select(this).style("text-anchor", "start");
-					// transform = "translate(" + centre + ")rotate("+ map(angle, 0, Math.PI, -90, 90) +")";
-		   //    	}
+		      	} else {
+		      		d3.select(this).style("text-anchor", "end");
+					transform = "translate(" + centre + ")rotate("+ ((angle * 180 / Math.PI)+90) +")";
+		      	}
 
 
 		      	
@@ -537,7 +571,7 @@ function outTexte(d)
 
 function clicTexte(d)
 {
-	
+	location.href = d.data[4];
 }
 
 
@@ -556,13 +590,14 @@ function clicTexte(d)
 	{
 	
 	    width = window.innerWidth; 
-		height = window.innerHeight;
-		height = 1000;
+		height = window.innerHeight*1.5;
+
 
 	    // update projection
 	    projection
-	        .translate([width / 2, (height / 2) + (height / 20)])
-	        .scale(width / 20);
+	        .translate([width / 2, (height / 2) /*+ (height / 20)*/])
+	        //.scale(width / 16);
+	        .scale(Math.min(width, height) / 12);
 	
 		svg
 			.attr("width", width)
