@@ -365,7 +365,7 @@ function setup()
 
 
 	    // TEXTE
-	    //d3.selectAll(".texte").style("font-size", +(Math.min(width, height) / 130)+"px");
+	    d3.selectAll(".texte").style("font-size", +(Math.min(width, height) / 130)+"px");
 
 	    // PICTO
 	    // d3.selectAll(".picto").attr("transform", "scale("+(Math.min(width, height) / 120)+")");
